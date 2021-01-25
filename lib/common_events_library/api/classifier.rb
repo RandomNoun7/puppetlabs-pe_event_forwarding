@@ -5,8 +5,8 @@ require_relative '../util/pe_http'
 class Classifier
   attr_accessor :pe_client
 
-  def initialize(pe_console, username, password, ssl_verify: true)
-    @pe_client = PeHttp.new(pe_console, port: 4433, username: username, password: password, ssl_verify: ssl_verify)
+  def initialize(pe_console, username, password, ssl_verify: true, token_lifetime: nil)
+    @pe_client = PeHttp.new(pe_console, port: 4433, username: username, password: password, ssl_verify: ssl_verify, token_lifetime: token_lifetime)
   end
 
   # Since we don't know exactly what we'll call these parameters yet this method

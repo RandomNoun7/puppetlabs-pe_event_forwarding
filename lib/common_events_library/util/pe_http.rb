@@ -2,9 +2,9 @@ require_relative 'common_events_http'
 
 # Include methods to secure a token and construct auth headers
 class PeHttp < CommonEventsHttp
-  attr_accessor :hostname, :port, :username, :pe_username, :pe_password, :password, :token, :ssl_verify, :ca_cert_path
+  attr_accessor :hostname, :port, :username, :pe_username, :pe_password, :password, :token, :ssl_verify, :ca_cert_path, :token_lifetime
 
-  def initialize(hostname, port: nil, username: nil, password: nil, token: nil, ssl_verify: true, ca_cert_path: nil)
+  def initialize(hostname, port: nil, username: nil, password: nil, token: nil, ssl_verify: true, ca_cert_path: nil, token_lifetime: nil)
     validate_pe_http_class(username, password, token)
     super(hostname,
           port: port,
@@ -15,8 +15,9 @@ class PeHttp < CommonEventsHttp
     @hostname = hostname.start_with?('https://') ? hostname : 'https://' + hostname
     # These instance variables are used to re-generate a token.
     # This allows us to nil out the more generic username and password from the superclass so that basic auth will not be used.
-    @pe_username = username
-    @pe_password = password
+    @pe_username    = username
+    @pe_password    = password
+    @token_lifetime = token_lifetime
     # Tokens are not stored in the parent class since OAuth is passed in as a header.
     @token = token ? token : get_pe_token
   end
@@ -42,6 +43,7 @@ class PeHttp < CommonEventsHttp
     temp_port = port
     self.port = 4433
     body = { 'login' => pe_username, 'password' => pe_password }
+    body['lifetime'] = token_lifetime unless token_lifetime.nil?
     response = post_request('rbac-api/v1/auth/token', body)
     token_hash = JSON.parse(response.body)
     # restore the original port
